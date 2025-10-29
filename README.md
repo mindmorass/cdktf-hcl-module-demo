@@ -53,17 +53,19 @@ After running the demo, check the `output/` directory:
 
 ## 🔄 Complete Workflow Demonstrated
 
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   CDKTF Module  │───▶│   HCL Module    │───▶│ Traditional TF  │
-│  (TypeScript)   │    │   (Generated)   │    │   (terraform)   │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         ▲                       │                       │
-         │                       ▼                       ▼
-         │              ┌─────────────────┐    ┌─────────────────┐
-         └──────────────│  CDKTF Import   │    │   HTML Files    │
-                        │ (Full Circle!)  │    │   (Actual)      │
-                        └─────────────────┘    └─────────────────┘
+```mermaid
+flowchart LR
+    A["CDKTF Module<br/>(TypeScript)"] -->|synthesize| B["HCL Module<br/>(Generated)"]
+    B -->|use| C["Traditional TF<br/>(terraform)"]
+    B -->|import| D["CDKTF Import<br/>(Full Circle!)"]
+    C -->|creates| E["HTML Files<br/>(Actual)"]
+    D -.->|can import| B
+
+    style A fill:#2c5aa0,stroke:#1a3a6b,color:#fff
+    style B fill:#5cb85c,stroke:#449d44,color:#fff
+    style C fill:#f0ad4e,stroke:#ec971f,color:#fff
+    style D fill:#5bc0de,stroke:#31b0d5,color:#fff
+    style E fill:#d9534f,stroke:#c9302c,color:#fff
 ```
 
 ## � Key Features
