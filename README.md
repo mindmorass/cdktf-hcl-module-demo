@@ -2,7 +2,7 @@
 
 A complete working example demonstrating how to create infrastructure modules with CDKTF that generate HCL modules consumable by both CDKTF and traditional Terraform workflows.
 
-## 🎯 What This Demonstrates
+## What This Demonstrates
 
 This repository shows a **fully functional workflow** where:
 
@@ -12,7 +12,7 @@ This repository shows a **fully functional workflow** where:
 4. **Traditional Terraform** consumes the generated modules
 5. **CDKTF** can import the HCL modules back (full circle!)
 
-## 🚀 Quick Start
+## Quick Start
 
 1. **Install dependencies:**
 
@@ -51,7 +51,7 @@ After running the demo, check the `output/` directory:
 - `demo.html` - Created by the CDKTF-generated module (if using defaults)
 - Files created via the module use the filename variable you specify
 
-## 🔄 Complete Workflow Demonstrated
+## Complete Workflow Demonstrated
 
 ```mermaid
 flowchart LR
@@ -68,7 +68,7 @@ flowchart LR
     style E fill:#d9534f,stroke:#c9302c,color:#fff
 ```
 
-## � Key Features
+## Key Features
 
 - **Local File Creation**: Uses `@cdktf/provider-local` instead of cloud resources
 - **Professional Styling**: Generated HTML includes CSS and responsive design
@@ -80,7 +80,7 @@ flowchart LR
 - **Module Packaging**: Creates distributable zip packages for the generated HCL module
 - **GitHub Actions**: Automated workflows for building and releasing module packages
 
-## 🎯 Native HCL Generation
+## Native HCL Generation
 
 CDKTF can now **natively output HCL** using the `--hcl` flag:
 
@@ -136,7 +136,7 @@ output "created_file" {
   value       = local_file.html_file.filename
   description = "Path to the created HTML file"
 }
-```## 📦 Module Distribution
+```## Module Distribution
 
 ### Local Packaging
 
@@ -204,7 +204,7 @@ module "html_page" {
 }
 ```
 
-## 🛠️ Project Structure
+## Project Structure
 
 ```
 cdktf-module-creation/
@@ -226,7 +226,7 @@ cdktf-module-creation/
 └── README.md
 ```
 
-## 🔧 Technical Details
+## Technical Details
 
 ### CDKTF Stack (`src/index.ts`)
 
@@ -250,7 +250,7 @@ cdktf-module-creation/
 - Simple variable structure: three string variables (filename, title, message)
 - Creates a single HTML file resource (not a map/loop pattern)
 
-## 🎪 Live Examples
+## Live Examples
 
 The generated HTML files demonstrate:
 
@@ -265,7 +265,7 @@ Each file contains:
 - Explanatory content about the workflow
 - Responsive design
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -318,7 +318,7 @@ terraform apply
 ls -la output/
 ```
 
-## 🎯 Use Cases
+## Use Cases
 
 ### Scenario 1: Infrastructure Team Migration
 
@@ -348,13 +348,13 @@ Unlike typical CDKTF examples that focus on cloud resources requiring credential
 - ✅ **Team Focused**: Addresses real organizational adoption challenges
 - ✅ **Production Ready**: Demonstrates patterns usable in real projects
 
-## 📚 Learning Resources
+## Learning Resources
 
 - **[CDKTF Documentation](https://www.terraform.io/cdktf)** - Official CDKTF docs
 - **[Terraform Registry](https://registry.terraform.io/)** - Module examples
 - **[Local Provider](https://registry.terraform.io/providers/hashicorp/local/latest/docs)** - Used in this example
 
-## 🤝 Contributing
+## Contributing
 
 This example is designed to be:
 
@@ -366,4 +366,4 @@ Feel free to extend this example for your specific needs!
 
 ---
 
-**🎉 This demonstrates that CDKTF and traditional Terraform can work together seamlessly, enabling organizations to adopt modern infrastructure-as-code practices without disrupting existing workflows.**
+**This demonstrates that CDKTF and traditional Terraform can work together seamlessly, enabling organizations to adopt modern infrastructure-as-code practices without disrupting existing workflows.**
