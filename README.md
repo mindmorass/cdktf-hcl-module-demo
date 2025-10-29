@@ -44,7 +44,7 @@ This repository shows a **fully functional workflow** where:
    ./package-module.sh
    ```
 
-## 📁 Generated Files
+## Generated Files
 
 After running the demo, check the `output/` directory:
 
