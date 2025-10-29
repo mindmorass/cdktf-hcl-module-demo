@@ -1,0 +1,200 @@
+name: Build and Release Terraform Module
+
+on:
+  workflow_dispatch: # Allow manual triggering
+  push:
+    tags:
+      - "v*" # Trigger on version tags like v1.0.0
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Validate tag
+        run: |
+          if [[ "$GITHUB_REF" != refs/tags/v* ]]; then
+            echo "Error: This workflow should only run on version tags (v*)"
+            echo "Current ref: $GITHUB_REF"
+            exit 1
+          fi
+          echo "Building release for tag: $GITHUB_REF"
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.5.x"
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Generate CDKTF providers
+        run: npx cdktf get
+
+      - name: Synth HCL module
+        run: npx cdktf synth --hcl
+
+      - name: Validate generated HCL
+        run: |
+          cd cdktf.out/stacks/SimpleTestStack
+          terraform fmt
+          terraform init
+          terraform validate
+
+      - name: Create module package
+        run: |
+          # Extract version from tag
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          else
+            # Fallback for workflow_dispatch or other triggers
+            VERSION="dev-${GITHUB_SHA::8}"
+          fi
+          echo "Using version: $VERSION"
+
+          # Create package directory
+          mkdir -p terraform-module-package
+
+          # Copy the native HCL output
+          cp cdktf.out/stacks/SimpleTestStack/cdk.tf terraform-module-package/main.tf
+
+          # Add module documentation
+          cat > terraform-module-package/README.md << EOF
+          # HTML File Terraform Module ${VERSION}
+
+          Generated from CDKTF TypeScript code.
+
+          ## Usage
+          # TODO: use terraform-docs to generate the usage documentation:w
+
+          \`\`\`hcl
+          module "html_files" {
+            source = "github.com/${{ github.repository }}//terraform-module?ref=${VERSION}"
+            
+            html_files = {
+              welcome = {
+                filename = "./output/welcome.html"
+                title    = "Welcome Page"
+                message  = "Welcome to our website!"
+              }
+            }
+          }
+          \`\`\`
+
+          ## Generated from
+
+          - Repository: ${{ github.repository }}
+          - Tag: ${VERSION}
+          - Commit: ${{ github.sha }}
+          - Generated: $(date -u)
+          EOF
+
+          # Create package metadata
+          cat > terraform-module-package/module.json << EOF
+          {
+            "name": "terraform-html-module",
+            "version": "${VERSION}",
+            "description": "Terraform module for creating HTML files",
+            "generated_from": "${{ github.repository }}",
+            "generated_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "commit": "${{ github.sha }}",
+            "cdktf_version": "0.20.0"
+          }
+          EOF
+
+          # Create version file
+          echo "${VERSION}" > terraform-module-package/VERSION
+
+      - name: Create module zip
+        run: |
+          # Extract version from tag
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          else
+            # Fallback for workflow_dispatch or other triggers
+            VERSION="dev-${GITHUB_SHA::8}"
+          fi
+          echo "Using version: $VERSION"
+
+          # Create a subdirectory for the module in the zip (required for GitHub module source)
+          mkdir -p terraform-html-module
+          cp -r terraform-module-package/* terraform-html-module/
+
+          # Create the zip with the proper structure
+          zip -r terraform-html-module-${VERSION}.zip terraform-html-module/
+          sha256sum terraform-html-module-${VERSION}.zip > terraform-html-module-${VERSION}.zip.sha256
+
+      - name: Commit module to repository (optional - for git-based module source)
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            # Create module directory in repo
+            mkdir -p terraform-html-module
+            cp -r terraform-module-package/* terraform-html-module/
+            git add terraform-html-module/
+            git commit -m "Add Terraform module for version ${VERSION}" || echo "No changes to commit"
+            git push || echo "Already up to date or no permission to push"
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            terraform-html-module-*.zip
+            terraform-html-module-*.zip.sha256
+          body: |
+            ## Terraform Module Release ${{ github.ref_name }}
+
+            This release contains a ready-to-use Terraform module generated from CDKTF.
+
+            ### What's Included
+            - `main.tf` - Module resources (generated from CDKTF)
+            - `README.md` - Usage documentation
+            - `VERSION` - Version identifier
+
+            ### Installation
+
+            **Option 1: Download and extract:**
+            ```bash
+            curl -L -o terraform-html-module.zip \\
+              https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/terraform-html-module-${{ github.ref_name }}.zip
+            unzip terraform-html-module.zip -d terraform-html-module
+            ```
+
+            **Option 2: Use directly from GitHub:**
+            ```hcl
+            module "html_files" {
+              source = "github.com/${{ github.repository }}//terraform-module?ref=${{ github.ref_name }}"
+              
+              html_files = {
+                example = {
+                  filename = "./output/example.html"
+                  title    = "My Page"
+                  message  = "Content for the page"
+                }
+              }
+            }
+            ```
+
+            ### Verification
+            ```bash
+            sha256sum -c terraform-html-module-${{ github.ref_name }}.zip.sha256
+            ```
+
+            Generated from commit: ${{ github.sha }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

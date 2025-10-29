@@ -1,0 +1,66 @@
+name: Build Terraform Module
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.5.x"
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Generate CDKTF providers
+        run: npx cdktf get
+
+      - name: Synth HCL module
+        run: npx cdktf synth --hcl
+
+      - name: Validate generated HCL
+        run: |
+          cd cdktf.out/stacks/SimpleTestStack
+          # Remove the backend block that has absolute paths
+          sed -i '/^  backend "local"/,/^  }$/d' cdk.tf
+          # Format the HCL
+          terraform fmt
+          terraform init
+          terraform validate
+
+      - name: Show generated output
+        run: |
+          echo "=== Generated HCL Module ==="
+          cat cdktf.out/stacks/SimpleTestStack/cdk.tf
+          echo ""
+          echo "=== CDKTF Output Directory ==="
+          ls -la cdktf.out/stacks/SimpleTestStack/
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-module
+          path: cdktf.out/stacks/SimpleTestStack/*.tf
+          retention-days: 7

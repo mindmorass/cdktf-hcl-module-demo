@@ -1,0 +1,47 @@
+{
+  "name": "cdktf-html-file-module",
+  "version": "1.0.0",
+  "description": "A CDKTF module that generates HCL for creating HTML files, demonstrating CDKTF to HCL workflow",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "demo": "./demo-workflow.sh",
+    "package": "./package-module.sh",
+    "test": "npx cdktf synth --hcl",
+    "test:pipeline": "./test-pipeline.sh",
+    "clean": "rm -rf dist/ cdktf.out/ generated-hcl-module/ output/"
+  },
+  "keywords": [
+    "cdktf",
+    "terraform",
+    "local",
+    "html",
+    "module",
+    "infrastructure"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "cdktf-cli": "^0.21.0",
+    "ts-node": "^10.9.2"
+  },
+  "dependencies": {
+    "cdktf": "^0.21.0",
+    "constructs": "^10.3.0",
+    "@cdktf/provider-local": "^11.0.0",
+    "@cdktf/tf-module-stack": "^7.0.21"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/cdktf-s3-bucket-module"
+  }
+}
