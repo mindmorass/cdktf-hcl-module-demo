@@ -6,8 +6,9 @@ This directory contains examples for using the CDKTF HTML File Module and demons
 
 ### Core Examples
 
-- **use-generated-module-terraform.tf** - Shows how traditional Terraform can use the generated HCL module locally
+- **use-generated-module.tf** - Shows how traditional Terraform can use the generated HCL module locally
 - **use-github-module.tf** - Shows how to use the module from GitHub releases
+- **import-hcl-example.ts** - Demonstrates CDKTF importing and using the HCL module it generated (full circle workflow)
 
 ### Generated Output
 
@@ -56,12 +57,28 @@ terraform apply
 # This will download the module from GitHub and create the HTML files
 ```
 
+### CDKTF Import Example
+
+To see CDKTF importing the generated HCL module:
+
+```bash
+# First, generate the module
+cd ..
+npx cdktf synth --hcl
+
+# Then run the import example
+cd examples
+npx ts-node import-hcl-example.ts
+cd ../cdktf.out/stacks/ImportHclModuleStack
+terraform init && terraform apply -auto-approve
+```
+
 ## What Gets Demonstrated
 
-1. **CDKTF Direct Usage**: Creates HTML files directly from TypeScript
-2. **HCL Module Generation**: Extracts reusable HCL modules from CDKTF
-3. **Traditional Terraform**: Uses the generated modules with standard terraform commands
-4. **CDKTF Import**: Shows how CDKTF can import and use the generated HCL modules
+1. **CDKTF Direct Usage**: Creates HTML files directly from TypeScript (`src/index.ts`)
+2. **HCL Module Generation**: CDKTF generates reusable HCL modules with variables and outputs
+3. **Traditional Terraform**: Uses the generated modules with standard terraform commands (`use-generated-module.tf`)
+4. **CDKTF Import**: Shows how CDKTF can import and use the generated HCL modules (`import-hcl-example.ts`)
 
 ## Viewing Results
 
@@ -69,9 +86,9 @@ After running the demo, open the generated HTML files:
 
 ```bash
 # View the generated files
-open output/cdktf-generated.html
-open output/terraform-generated.html
-open output/team-demo.html
+open output/demo.html
+open output/terraform-demo.html
+open output/cdktf-import-demo.html
 ```
 
 Each file will clearly show which tool created it and demonstrate the complete workflow.
